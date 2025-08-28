@@ -1,0 +1,27 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum FunctionUsed {
+  RESEARCH
+  VALUE_STATEMENT
+  DISCOVERY_QUESTIONS
+  CURRENT_STATE_NEGATIVE_IMPACT
+  VALUE_MAPS
+}
+
+model UsageEvent {
+  id                       String       @id @default(cuid())
+  userId                   String
+  accountName              String
+  functionUsed             FunctionUsed
+  salesforceOpportunityId  String?
+  contentEdits             String?
+  createdAt                DateTime     @default(now())
+}
+
