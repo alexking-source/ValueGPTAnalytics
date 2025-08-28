@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model UsageEvent {
+  id                      String       @id @default(cuid())
+  userId                  String?
+  accountName             String?
+  functionUsed            FunctionUsed
+  salesforceOpportunityId String?
+  contentEdits            String?
+  createdAt               DateTime     @default(now())
+}
+
+enum FunctionUsed {
+  RESEARCH
+  VALUE_STATEMENT
+  DISCOVERY_QUESTIONS
+  CURRENT_STATE_NEGATIVE_IMPACT
+  VALUE_MAPS
+}
