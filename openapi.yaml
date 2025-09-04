@@ -1,0 +1,114 @@
+openapi: 3.1.0
+info:
+  title: ValueGPT Analytics API
+  version: "0.1.0"
+  description: |
+    Tracks ValueGPT usage events for analysis.
+    Auth: Bearer token in the Authorization header.
+
+servers:
+  - url: http://localhost:3004
+    description: Local dev (not reachable from GPT on the internet)
+  # When deployed, add your public server here, e.g.:
+  # - url: https://analytics.yourdomain.com
+  #   description: Production
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    UsageEvent:
+      type: object
+      required: [id, userId, accountName, functionUsed, createdAt]
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        accountName: { type: string }
+        functionUsed:
+          type: string
+          description: One of: RESEARCH, VALUE_STATEMENT, DISCOVERY_QUESTIONS, CURRENT_STATE_NEGATIVE_IMPACT, VALUE_MAPS
+        salesforceOpportunityId:
+          type: string
+          nullable: true
+        contentEdits:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+    TrackRequest:
+      type: object
+      required: [userId, accountName, functionUsed]
+      properties:
+        userId: { type: string }
+        accountName: { type: string }
+        functionUsed: { type: string }
+        salesforceOpportunityId:
+          type: string
+          nullable: true
+        contentEdits:
+          type: string
+          nullable: true
+
+paths:
+  /api/health:
+    get:
+      operationId: getHealth
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  service: { type: string }
+                  version: { type: string }
+
+  /api/events:
+    get:
+      operationId: listEvents
+      summary: List recent usage events
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UsageEvent"
+
+  /api/track:
+    post:
+      operationId: createEvent
+      summary: Create a usage event
+      description: >
+        Records a ValueGPT usage event (server expects Authorization: Bearer <token>).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrackRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsageEvent"
+        "400":
+          description: Missing required fields
+        "401":
+          description: Unauthorized (missing or wrong bearer token)
+
